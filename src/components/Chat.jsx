@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { chatService } from "../firebase";
 import { 
   Send, Plus, Search, LogOut, Hash, Smile, Trash2, 
-  Menu, X, Radio, MessageSquare, ShieldAlert 
+  Menu, X, Radio, MessageSquare, ShieldAlert, ArrowDown 
 } from "lucide-react";
 
 export default function Chat({ user, onSignOut }) {
@@ -16,6 +16,7 @@ export default function Chat({ user, onSignOut }) {
   const [showNewRoomModal, setShowNewRoomModal] = useState(false);
   const [newRoomName, setNewRoomName] = useState("");
   const [roomError, setRoomError] = useState("");
+  const [showScrollButton, setShowScrollButton] = useState(false);
   
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
@@ -55,6 +56,16 @@ export default function Chat({ user, onSignOut }) {
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target;
+    // Show button if user has scrolled up more than 150px
+    if (scrollHeight - scrollTop - clientHeight > 150) {
+      setShowScrollButton(true);
+    } else {
+      setShowScrollButton(false);
+    }
   };
 
   const handleSendMessage = async (e) => {
@@ -272,7 +283,7 @@ export default function Chat({ user, onSignOut }) {
       </div>
 
       {/* 2. Main Chat Panel */}
-      <div className="chat-window glass-panel" style={{ borderRadius: "0 var(--radius-lg) var(--radius-lg) 0" }}>
+      <div className="chat-window glass-panel" style={{ borderRadius: "0 var(--radius-lg) var(--radius-lg) 0", position: "relative" }}>
         
         {/* Chat Window Header */}
         <div className="chat-header">
@@ -302,7 +313,7 @@ export default function Chat({ user, onSignOut }) {
         </div>
 
         {/* Chat Scrollable Area */}
-        <div className="chat-messages">
+        <div className="chat-messages" onScroll={handleScroll}>
           {messages.length === 0 ? (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, color: "var(--text-muted)" }}>
               <div style={{
@@ -446,6 +457,34 @@ export default function Chat({ user, onSignOut }) {
             )}
           </form>
         </div>
+
+        {/* Floating Scroll to Bottom Button */}
+        {showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            style={{
+              position: "absolute",
+              bottom: "86px",
+              right: "30px",
+              width: "42px",
+              height: "42px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, var(--color-primary), var(--color-secondary))",
+              color: "#fff",
+              border: "none",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "var(--shadow-neon)",
+              zIndex: 90,
+              animation: "fadeIn 0.25s ease"
+            }}
+            title="Scroll to bottom"
+          >
+            <ArrowDown size={20} />
+          </button>
+        )}
       </div>
 
       {/* 3. Create Room Modal Overlay */}
