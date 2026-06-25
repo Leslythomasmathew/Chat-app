@@ -109,7 +109,7 @@ export default function Auth({ onAuthSuccess }) {
             </label>
             <input
               type="text"
-              placeholder="e.g. Neo, Trinity, Morpheus"
+              placeholder="type your nick name here"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="input-cyber"
