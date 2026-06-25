@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getFirestore, collection, addDoc, query, orderBy, limit, onSnapshot, serverTimestamp } from "firebase/firestore";
+import { getDatabase, ref, push, set, onValue, off, remove, serverTimestamp } from "firebase/database";
 
 // Helper to check if a config is valid
 const isValidConfig = (config) => {
@@ -44,11 +44,11 @@ let isDemoMode = true;
 if (config) {
   try {
     const app = getApps().length === 0 ? initializeApp(config) : getApps()[0];
-    dbInstance = getFirestore(app);
+    dbInstance = getDatabase(app);
     isDemoMode = false;
-    console.log("Firebase initialized successfully (Nickname Login Mode).");
+    console.log("Firebase Realtime Database initialized successfully.");
   } catch (error) {
-    console.error("Failed to initialize real Firebase, falling back to Demo Mode:", error);
+    console.error("Failed to initialize Firebase Realtime Database, falling back to Demo Mode:", error);
     isDemoMode = true;
   }
 } else {
@@ -109,7 +109,7 @@ if (typeof window !== "undefined") {
   });
 }
 
-// Unified API Wrapper (pure Nickname Auth)
+// Unified API Wrapper (pure Nickname Auth with Realtime Database)
 export const chatService = {
   isDemoMode: () => isDemoMode,
 
@@ -172,17 +172,25 @@ export const chatService = {
     window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: null }));
   },
 
-  // Rooms Operations
+  // Rooms Operations (Realtime DB implementation)
   subscribeToRooms: (callback) => {
     if (!isDemoMode && dbInstance) {
-      const q = query(collection(dbInstance, "rooms"), orderBy("name"));
-      return onSnapshot(q, (snapshot) => {
-        const rooms = snapshot.docs.map((doc) => doc.data().name);
-        callback(rooms.length > 0 ? rooms : PREDEFINED_ROOMS);
+      const roomsRef = ref(dbInstance, "rooms");
+      onValue(roomsRef, (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          // Firebase RTDB returns room objects
+          const list = Object.values(val).map(roomObj => roomObj.name);
+          callback(list.length > 0 ? list : PREDEFINED_ROOMS);
+        } else {
+          callback(PREDEFINED_ROOMS);
+        }
       }, (err) => {
-        console.error("Firestore rooms error, using defaults:", err);
+        console.error("Realtime DB rooms subscription error, using defaults:", err);
         callback(PREDEFINED_ROOMS);
       });
+
+      return () => off(roomsRef);
     } else {
       const rooms = getMockRooms();
       callback(rooms);
@@ -199,9 +207,11 @@ export const chatService = {
     if (!cleanRoom) throw new Error("Invalid room name");
 
     if (!isDemoMode && dbInstance) {
-      await addDoc(collection(dbInstance, "rooms"), {
+      const roomsRef = ref(dbInstance, "rooms");
+      const newRoomRef = push(roomsRef);
+      await set(newRoomRef, {
         name: cleanRoom,
-        createdAt: serverTimestamp(),
+        createdAt: serverTimestamp()
       });
     } else {
       const rooms = getMockRooms();
@@ -215,22 +225,25 @@ export const chatService = {
     return cleanRoom;
   },
 
-  // Messages Operations
+  // Messages Operations (Realtime DB implementation)
   subscribeToMessages: (room, callback) => {
     if (!isDemoMode && dbInstance) {
-      const q = query(
-        collection(dbInstance, `messages_${room}`),
-        orderBy("createdAt", "asc"),
-        limit(100)
-      );
-      return onSnapshot(q, (snapshot) => {
-        const messages = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate()?.toISOString() || new Date().toISOString(),
-        }));
-        callback(messages);
+      const messagesRef = ref(dbInstance, `messages_${room}`);
+      onValue(messagesRef, (snapshot) => {
+        const val = snapshot.val();
+        if (val) {
+          const list = Object.keys(val).map(key => ({
+            id: key,
+            ...val[key],
+            createdAt: val[key].createdAt ? new Date(val[key].createdAt).toISOString() : new Date().toISOString()
+          }));
+          callback(list);
+        } else {
+          callback([]);
+        }
       });
+
+      return () => off(messagesRef);
     } else {
       const msgs = getMockMessages(room);
       callback(msgs);
@@ -250,7 +263,9 @@ export const chatService = {
     if (!text.trim()) return;
 
     if (!isDemoMode && dbInstance) {
-      await addDoc(collection(dbInstance, `messages_${room}`), {
+      const messagesRef = ref(dbInstance, `messages_${room}`);
+      const newMsgRef = push(messagesRef);
+      await set(newMsgRef, {
         text: text.trim(),
         createdAt: serverTimestamp(),
         uid: user.uid,
@@ -302,7 +317,9 @@ export const chatService = {
         mockMessageListeners[room].forEach((cb) => cb(updatedMsgs));
       }
     } else {
-      console.warn("Message deletion is supported in Demo Mode.");
+      if (!isDemoMode && dbInstance) {
+        await remove(ref(dbInstance, `messages_${room}/${messageId}`));
+      }
     }
   }
 };
