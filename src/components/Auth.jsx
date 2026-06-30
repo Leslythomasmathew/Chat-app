@@ -9,6 +9,7 @@ export default function Auth({ onAuthSuccess }) {
   const [showSettings, setShowSettings] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
+  const isDemo = chatService.isDemoMode();
 
   // Firebase Config Form States (for custom firestore connection)
   const currentConfig = chatService.getFirebaseConfig() || {};
@@ -103,6 +104,30 @@ export default function Auth({ onAuthSuccess }) {
 
         {/* Username Login Form */}
         <form onSubmit={handleLogin} style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          <div style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "8px",
+            padding: "8px 12px",
+            borderRadius: "var(--radius-md)",
+            fontSize: "0.75rem",
+            background: isDemo ? "rgba(245, 158, 11, 0.08)" : "rgba(16, 185, 129, 0.08)",
+            border: isDemo ? "1px solid rgba(245, 158, 11, 0.15)" : "1px solid rgba(16, 185, 129, 0.15)",
+            color: isDemo ? "#fbbf24" : "#34d399",
+            fontWeight: "500",
+            textAlign: "center"
+          }}>
+            <span style={{
+              width: "6px",
+              height: "6px",
+              borderRadius: "50%",
+              background: isDemo ? "#fbbf24" : "#34d399",
+              boxShadow: isDemo ? "0 0 8px #fbbf24" : "0 0 8px #34d399"
+            }}></span>
+            {isDemo ? "Demo Mode (Local Storage)" : "Firebase Connection Active"}
+          </div>
+
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "500" }}>
               Choose a Nickname
