@@ -172,18 +172,20 @@ export const chatService = {
     window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: null }));
   },
 
-  // Rooms Operations (Realtime DB implementation)
   subscribeToRooms: (callback) => {
     if (!isDemoMode && dbInstance) {
       const roomsRef = ref(dbInstance, "rooms");
       onValue(roomsRef, (snapshot) => {
         const val = snapshot.val();
+        const defaultRooms = [...PREDEFINED_ROOMS];
         if (val) {
           // Firebase RTDB returns room objects
           const list = Object.values(val).map(roomObj => roomObj.name);
-          callback(list.length > 0 ? list : PREDEFINED_ROOMS);
+          // Always merge default rooms with custom rooms from database
+          const combined = Array.from(new Set([...defaultRooms, ...list]));
+          callback(combined);
         } else {
-          callback(PREDEFINED_ROOMS);
+          callback(defaultRooms);
         }
       }, (err) => {
         console.error("Realtime DB rooms subscription error, using defaults:", err);
