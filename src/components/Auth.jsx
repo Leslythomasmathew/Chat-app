@@ -209,8 +209,8 @@ export default function Auth({ onAuthSuccess }) {
           </button>
         </form>
 
-        {/* Firebase Config Toggle (Optional) - Visible in Demo Mode or if a custom config is currently saved */}
-        {(isDemo || hasLocalConfig) && (
+        {/* Firebase Config Toggle (Optional) - Visible in Demo Mode, if a custom config is saved, or if there is an error */}
+        {(isDemo || hasLocalConfig || error) && (
           <>
             <div style={{ marginTop: "24px", textAlign: "center" }}>
               <button
