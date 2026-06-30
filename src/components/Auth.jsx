@@ -97,7 +97,7 @@ export default function Auth({ onAuthSuccess }) {
             CHATTIKO
           </h1>
           <p style={{ color: "var(--text-muted)", fontSize: "0.95rem" }}>
-            Enter a nickname and start chatting instantly.
+            Sign in using Google or join as a guest
           </p>
         </div>
 
@@ -181,11 +181,11 @@ export default function Auth({ onAuthSuccess }) {
 
           <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
             <label style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "500" }}>
-              Choose a Nickname
+              Guest Nickname
             </label>
             <input
               type="text"
-              placeholder="type your nick name here"
+              placeholder="Enter your guest nickname"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               className="input-cyber"
@@ -193,52 +193,6 @@ export default function Auth({ onAuthSuccess }) {
               disabled={isSubmitting}
               autoFocus
             />
-          </div>
-
-          {/* Avatar Selector Grid */}
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <label style={{ fontSize: "0.85rem", color: "var(--text-secondary)", fontWeight: "500" }}>
-              Choose an Avatar
-            </label>
-            <div style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
-              gap: "10px",
-              padding: "10px",
-              background: "var(--bg-input)",
-              border: "1px solid var(--border-light)",
-              borderRadius: "var(--radius-md)"
-            }}>
-              {AVATARS.map((avatar) => (
-                <div
-                  key={avatar}
-                  onClick={() => setSelectedAvatar(avatar)}
-                  style={{
-                    cursor: "pointer",
-                    borderRadius: "50%",
-                    padding: "3px",
-                    border: selectedAvatar === avatar ? "2px solid var(--color-primary)" : "2px solid transparent",
-                    boxShadow: selectedAvatar === avatar ? "var(--shadow-neon)" : "none",
-                    transition: "var(--transition-smooth)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    background: "rgba(255,255,255,0.01)"
-                  }}
-                  className="avatar-select-item"
-                >
-                  <img
-                    src={`https://api.dicebear.com/7.x/adventurer/svg?seed=${avatar}`}
-                    alt={avatar}
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "50%"
-                    }}
-                  />
-                </div>
-              ))}
-            </div>
           </div>
           
           <button
@@ -251,7 +205,7 @@ export default function Auth({ onAuthSuccess }) {
             }}
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Entering..." : "Join Chat Room"}
+            {isSubmitting ? "Entering..." : "Login as Guest"}
           </button>
         </form>
 
