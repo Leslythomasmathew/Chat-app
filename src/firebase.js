@@ -1,6 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getDatabase, ref, push, set, onValue, off, remove, serverTimestamp } from "firebase/database";
-import { getAuth, signInAnonymously, updateProfile, onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
+import { getAuth, signInAnonymously, updateProfile, onAuthStateChanged, signOut as firebaseSignOut, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 // Helper to check if a config is valid
 const isValidConfig = (config) => {
@@ -193,6 +193,29 @@ export const chatService = {
         uid: `user-${cleanName.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
         displayName: cleanName,
         photoURL: photoURL,
+      };
+      localStorage.setItem("chat_user", JSON.stringify(user));
+      window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: JSON.stringify(user) }));
+      return user;
+    }
+  },
+
+  signInWithGoogle: async () => {
+    if (!isDemoMode && authInstance) {
+      const provider = new GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
+      const userCredential = await signInWithPopup(authInstance, provider);
+      const user = userCredential.user;
+      return {
+        uid: user.uid,
+        displayName: user.displayName || "Google User",
+        photoURL: user.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.uid}`
+      };
+    } else {
+      const user = {
+        uid: `mock-google-${Date.now()}`,
+        displayName: "Demo Google User",
+        photoURL: `https://api.dicebear.com/7.x/adventurer/svg?seed=google-demo`
       };
       localStorage.setItem("chat_user", JSON.stringify(user));
       window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: JSON.stringify(user) }));
