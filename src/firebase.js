@@ -19,6 +19,12 @@ const getFirebaseConfig = () => {
     const localConfig = localStorage.getItem("firebase_config");
     if (localConfig) {
       const parsed = JSON.parse(localConfig);
+      // Automatically trim any whitespaces from user input
+      Object.keys(parsed).forEach((key) => {
+        if (typeof parsed[key] === "string") {
+          parsed[key] = parsed[key].trim();
+        }
+      });
       if (isValidConfig(parsed)) return parsed;
     }
   } catch (e) {
@@ -26,12 +32,12 @@ const getFirebaseConfig = () => {
   }
 
   const envConfig = {
-    apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-    appId: import.meta.env.VITE_FIREBASE_APP_ID,
+    apiKey: import.meta.env.VITE_FIREBASE_API_KEY?.trim(),
+    authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN?.trim(),
+    projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID?.trim(),
+    storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET?.trim(),
+    messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID?.trim(),
+    appId: import.meta.env.VITE_FIREBASE_APP_ID?.trim(),
   };
 
   if (isValidConfig(envConfig)) return envConfig;
