@@ -59,6 +59,11 @@ const getFirebaseConfig = () => {
 };
 
 const config = getFirebaseConfig();
+console.log("CHATTIKO: Loaded Firebase config:", {
+  apiKey: config?.apiKey,
+  projectId: config?.projectId,
+  authDomain: config?.authDomain
+});
 let dbInstance = null;
 let authInstance = null;
 let isDemoMode = true;
