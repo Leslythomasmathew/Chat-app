@@ -195,7 +195,7 @@ export default function Auth({ onAuthSuccess }) {
             }}
           >
             <Settings size={12} className={showSettings ? "spin" : ""} />
-            Connect Custom Firestore
+            Connect Custom Firebase
             {showSettings ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
           </button>
         </div>
@@ -211,11 +211,11 @@ export default function Auth({ onAuthSuccess }) {
           }}>
             <h3 style={{ fontSize: "0.9rem", color: "var(--text-primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
               <Info size={14} color="var(--color-secondary)" />
-              Firestore Connection
+              Firebase Connection
             </h3>
             
             <p style={{ fontSize: "0.7rem", color: "var(--text-muted)", marginBottom: "12px", lineHeight: "1.4" }}>
-              Paste your Firebase credentials to save chat logs in your Firestore Database using your chosen nickname.
+              Paste your Firebase credentials to save chat logs in your Firebase Realtime Database using your chosen nickname.
             </p>
 
             <form onSubmit={handleSaveConfig} style={{ display: "flex", flexDirection: "column", gap: "8px" }}>

@@ -257,7 +257,7 @@ export default function Chat({ user, onSignOut }) {
                 </div>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "0.7rem", marginTop: "2px" }}>
                   <span className={`status-badge ${isDemo ? "demo" : ""}`}></span>
-                  <span style={{ color: "var(--text-muted)" }}>{isDemo ? "Local Storage" : "Firestore Online"}</span>
+                  <span style={{ color: "var(--text-muted)" }}>{isDemo ? "Local Storage" : "Firebase Online"}</span>
                 </div>
               </div>
             </div>

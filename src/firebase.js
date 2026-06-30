@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from "firebase/app";
 import { getDatabase, ref, push, set, onValue, off, remove, serverTimestamp } from "firebase/database";
+import { getAuth, signInAnonymously, updateProfile, onAuthStateChanged, signOut as firebaseSignOut } from "firebase/auth";
 
 // Helper to check if a config is valid
 const isValidConfig = (config) => {
@@ -39,16 +40,18 @@ const getFirebaseConfig = () => {
 
 const config = getFirebaseConfig();
 let dbInstance = null;
+let authInstance = null;
 let isDemoMode = true;
 
 if (config) {
   try {
     const app = getApps().length === 0 ? initializeApp(config) : getApps()[0];
     dbInstance = getDatabase(app);
+    authInstance = getAuth(app);
     isDemoMode = false;
-    console.log("Firebase Realtime Database initialized successfully.");
+    console.log("Firebase Realtime Database and Auth initialized successfully.");
   } catch (error) {
-    console.error("Failed to initialize Firebase Realtime Database, falling back to Demo Mode:", error);
+    console.error("Failed to initialize Firebase, falling back to Demo Mode:", error);
     isDemoMode = true;
   }
 } else {
@@ -129,47 +132,81 @@ export const chatService = {
     window.location.reload();
   },
 
-  // Pure Local Storage User Auth State
+  // Firebase / Local Storage Auth State
   subscribeToAuth: (callback) => {
-    const checkUser = () => {
-      const userStr = localStorage.getItem("chat_user");
-      if (userStr) {
-        callback(JSON.parse(userStr));
-      } else {
-        callback(null);
-      }
-    };
-    
-    checkUser();
+    if (!isDemoMode && authInstance) {
+      return onAuthStateChanged(authInstance, (firebaseUser) => {
+        if (firebaseUser) {
+          callback({
+            uid: firebaseUser.uid,
+            displayName: firebaseUser.displayName || "User",
+            photoURL: firebaseUser.photoURL || `https://api.dicebear.com/7.x/adventurer/svg?seed=${firebaseUser.uid}`
+          });
+        } else {
+          callback(null);
+        }
+      });
+    } else {
+      const checkUser = () => {
+        const userStr = localStorage.getItem("chat_user");
+        if (userStr) {
+          callback(JSON.parse(userStr));
+        } else {
+          callback(null);
+        }
+      };
+      
+      checkUser();
 
-    const handler = (e) => {
-      if (e.key === "chat_user") {
-        checkUser();
-      }
-    };
-    window.addEventListener("storage", handler);
-    
-    return () => {
-      window.removeEventListener("storage", handler);
-    };
+      const handler = (e) => {
+        if (e.key === "chat_user") {
+          checkUser();
+        }
+      };
+      window.addEventListener("storage", handler);
+      
+      return () => {
+        window.removeEventListener("storage", handler);
+      };
+    }
   },
 
   signIn: async (username, avatarSeed) => {
     const cleanName = username.trim() || "User";
     const seed = avatarSeed || cleanName;
-    const user = {
-      uid: `user-${cleanName.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
-      displayName: cleanName,
-      photoURL: `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`,
-    };
-    localStorage.setItem("chat_user", JSON.stringify(user));
-    window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: JSON.stringify(user) }));
-    return user;
+    const photoURL = `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}`;
+
+    if (!isDemoMode && authInstance) {
+      const userCredential = await signInAnonymously(authInstance);
+      const user = userCredential.user;
+      await updateProfile(user, {
+        displayName: cleanName,
+        photoURL: photoURL
+      });
+      return {
+        uid: user.uid,
+        displayName: cleanName,
+        photoURL: photoURL
+      };
+    } else {
+      const user = {
+        uid: `user-${cleanName.toLowerCase().replace(/\s+/g, "-")}-${Date.now()}`,
+        displayName: cleanName,
+        photoURL: photoURL,
+      };
+      localStorage.setItem("chat_user", JSON.stringify(user));
+      window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: JSON.stringify(user) }));
+      return user;
+    }
   },
 
   signOut: async () => {
-    localStorage.removeItem("chat_user");
-    window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: null }));
+    if (!isDemoMode && authInstance) {
+      await firebaseSignOut(authInstance);
+    } else {
+      localStorage.removeItem("chat_user");
+      window.dispatchEvent(new StorageEvent("storage", { key: "chat_user", newValue: null }));
+    }
   },
 
   subscribeToRooms: (callback) => {
