@@ -204,35 +204,37 @@ export default function Auth({ onAuthSuccess }) {
           </button>
         </form>
 
-        {/* Firebase Config Toggle (Optional) */}
-        <div style={{ marginTop: "24px", textAlign: "center" }}>
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            style={{
-              background: "transparent",
-              border: "none",
-              color: "var(--text-muted)",
-              fontSize: "0.8rem",
-              cursor: "pointer",
-              display: "inline-flex",
-              alignItems: "center",
-              gap: "6px"
-            }}
-          >
-            <Settings size={12} className={showSettings ? "spin" : ""} />
-            Connect Custom Firebase
-            {showSettings ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
-          </button>
-        </div>
+        {/* Firebase Config Toggle (Optional) - Only visible when in local Demo Mode */}
+        {isDemo && (
+          <>
+            <div style={{ marginTop: "24px", textAlign: "center" }}>
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "var(--text-muted)",
+                  fontSize: "0.8rem",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px"
+                }}
+              >
+                <Settings size={12} className={showSettings ? "spin" : ""} />
+                Connect Custom Firebase
+                {showSettings ? <ChevronUp size={12} /> : <ChevronDown size={12} />}
+              </button>
+            </div>
 
-        {/* Settings Panel */}
-        {showSettings && (
-          <div className="glass-panel animate-fade" style={{
-            marginTop: "16px",
-            padding: "20px",
-            background: "rgba(10, 8, 20, 0.4)",
-            border: "1px solid var(--border-light)",
-            borderRadius: "var(--radius-md)"
+            {/* Settings Panel */}
+            {showSettings && (
+              <div className="glass-panel animate-fade" style={{
+                marginTop: "16px",
+                padding: "20px",
+                background: "rgba(10, 8, 20, 0.4)",
+                border: "1px solid var(--border-light)",
+                borderRadius: "var(--radius-md)"
           }}>
             <h3 style={{ fontSize: "0.9rem", color: "var(--text-primary)", marginBottom: "8px", display: "flex", alignItems: "center", gap: "8px" }}>
               <Info size={14} color="var(--color-secondary)" />
@@ -319,6 +321,8 @@ export default function Auth({ onAuthSuccess }) {
               </div>
             </form>
           </div>
+        )}
+          </>
         )}
       </div>
     </div>
