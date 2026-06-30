@@ -10,6 +10,7 @@ export default function Auth({ onAuthSuccess }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState(null);
   const isDemo = chatService.isDemoMode();
+  const hasLocalConfig = localStorage.getItem("firebase_config") !== null;
 
   // Firebase Config Form States (for custom firestore connection)
   const currentConfig = chatService.getFirebaseConfig() || {};
@@ -204,8 +205,8 @@ export default function Auth({ onAuthSuccess }) {
           </button>
         </form>
 
-        {/* Firebase Config Toggle (Optional) - Only visible when in local Demo Mode */}
-        {isDemo && (
+        {/* Firebase Config Toggle (Optional) - Visible in Demo Mode or if a custom config is currently saved */}
+        {(isDemo || hasLocalConfig) && (
           <>
             <div style={{ marginTop: "24px", textAlign: "center" }}>
               <button
