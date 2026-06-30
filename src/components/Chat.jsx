@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { chatService } from "../firebase";
 import { 
   Send, Plus, Search, LogOut, Hash, Smile, Trash2, 
-  Menu, X, Radio, MessageSquare, ShieldAlert, ArrowDown 
+  Menu, X, Radio, MessageSquare, ShieldAlert, ArrowDown, Home 
 } from "lucide-react";
 
 export default function Chat({ user, onSignOut }) {
@@ -309,7 +309,24 @@ export default function Chat({ user, onSignOut }) {
             </div>
           </div>
 
-
+          {activeRoom !== "general" && (
+            <button
+              onClick={() => setActiveRoom("general")}
+              className="btn-secondary"
+              style={{
+                padding: "6px 12px",
+                fontSize: "0.8rem",
+                height: "34px",
+                gap: "6px",
+                display: "flex",
+                alignItems: "center"
+              }}
+              title="Return to general room"
+            >
+              <Home size={14} />
+              Back to Home
+            </button>
+          )}
         </div>
 
         {/* Chat Scrollable Area */}
